@@ -1,5 +1,5 @@
 #include "map.h"
-
+#include "common.h"
 #include "landscape.h"
 
 
@@ -93,7 +93,7 @@ char isBlocked( int inX, int inY ) {
 char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse ) {
     
     // wall along far left and top
-    if( inGridX <=0 || inGridY <= 0 ) {
+    if( ( RTL ? ( inGridX >= (RTL_START / tileW) ) : ( inGridX <= 0 ) ) || inGridY <= 0 ) {
         return true;
         }
 

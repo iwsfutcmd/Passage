@@ -80,7 +80,7 @@ int blowUpChanged = true;
 
 
 char fullScreen = true;
-
+char female = false;
 
 // lock down to 15 fps
 int lockedFrameRate = 15;
@@ -393,6 +393,13 @@ int mainFunction( int inArgCount, char **inArgs ) {
         fullScreen = readFullscreen;
         }
     
+    char femaleFound = false;
+    int readFemale = SettingsManager::getIntSetting( "female",
+                                                         &femaleFound );
+    if( femaleFound ) {
+        female = readFemale;
+        }
+
     printf( "Starting game in " );
     if( fullScreen ) {
         printf( "fullscreen" );
@@ -462,7 +469,7 @@ int mainFunction( int inArgCount, char **inArgs ) {
 
 
     // load graphics only once
-    loadWorldGraphics();
+    loadWorldGraphics(female);
     
 
     setMusicLoudness( 0 );
@@ -563,10 +570,10 @@ char playGame() {
 
 
     // start player position
-    playerX = getTileWidth();
+    playerX = RTL ? (RTL_START - getTileWidth()) : getTileWidth();
     maxPlayerX = playerX;
     
-    dX = playerX;
+    dX = RTL ? playerX - width : playerX;
     playerY = 2 + height/2;
     dY = 0;
     
@@ -581,7 +588,7 @@ char playGame() {
     
 
     // first, flip title onto screen
-    Image *titleImage = readTGA( "title.tga" );
+    Image *titleImage = readTGA( RTL ? "title_ar.tga" : "title.tga" );
     int numTitlePixels = titleImage->getWidth() * titleImage->getHeight();
     
     double *titleRed = titleImage->getChannel( 0 );
@@ -866,8 +873,7 @@ char playGame() {
             double gameWeight = 1 - titleWeight;
             
             // wipe from left to right during fade
-            int wipePosition = (int)( titleWeight * width );
-            
+            int wipePosition = (int)( RTL ? (width - (titleWeight * width )) : (titleWeight * width));
             // fade out music while we do it
             setMusicLoudness( 1.0 - titleWeight );
             
@@ -900,7 +906,7 @@ char playGame() {
                 
 
                 int x = i % width;
-                if( x <= wipePosition ) {
+                if( RTL ? x >= wipePosition : x <= wipePosition ) {
                     gameImage[i] = red << 16 | green << 8 | blue;
                     }
                 
@@ -1015,22 +1021,16 @@ char playGame() {
                 
                 playerX -= moveDelta;
                 
-                if( playerX < 0 ) {
-                    // undo
-                    playerX += moveDelta;
+                // update screen position
+                dX -= moveDelta;
+                
+                // pick sprite frame based on position in world
+                if( ( (int)playerX / 2 ) % 2 == 0 ) {
+                    currentSpriteIndex = 6;
                     }
                 else {
-                    // update screen position
-                    dX -= moveDelta;
-                    
-                    // pick sprite frame based on position in world
-                    if( ( (int)playerX / 2 ) % 2 == 0 ) {
-                        currentSpriteIndex = 6;
-                        }
-                    else {
-                        currentSpriteIndex = 7;
-                        }                    
-                    }
+                    currentSpriteIndex = 7;
+                    }                    
                 }
             }
         else if( getKeyDown( SDLK_RIGHT ) || getJoyPushed( SDL_HAT_RIGHT )) {
@@ -1157,10 +1157,10 @@ char playGame() {
                 
         if( ! isPlayerDead() && ! paused ) {
             // player position on screen inches forward
-            dX += timeDelta;
+            RTL ? (dX -= timeDelta) : (dX += timeDelta);
             }
         
-        double age = ( playerX - dX ) / width;
+        double age = RTL ? ((width - ( playerX - dX )) / width) : ((playerX - dX) / width);
         
         setCharacterAges( age );
         
@@ -1221,11 +1221,17 @@ char playGame() {
          
         int exploreDelta = 0;
         
-        if( playerX > maxPlayerX ) {
-            exploreDelta = (int)( playerX - maxPlayerX );
-            maxPlayerX = playerX;
-            }
-        
+        if( RTL ) {
+            if( playerX < maxPlayerX ) {
+                exploreDelta = (int)( maxPlayerX - playerX );
+                maxPlayerX = playerX;
+                }
+        } else {
+            if( playerX > maxPlayerX ) {
+                exploreDelta = (int)( playerX - maxPlayerX );
+                maxPlayerX = playerX;
+                }
+        }
         int spouseExploreFactor = 2;
         
         if( haveMetSpouse() ) {

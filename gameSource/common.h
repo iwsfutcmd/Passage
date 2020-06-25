@@ -15,3 +15,6 @@ Image *readTGA( const char *inFolderName, const char *inFileName );
 
 
 #endif
+
+#define RTL false
+#define RTL_START 100000

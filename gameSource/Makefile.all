@@ -40,15 +40,18 @@ Envelope.cpp \
 
 GAME_GRAPHICS = \
 graphics/tileSet.tga \
-graphics/characterSprite.tga \
-graphics/characterSpriteSad.tga \
-graphics/spouseSprite.tga \
+graphics/maleSprite.tga \
+graphics/maleSpriteSad.tga \
+graphics/femaleSprite.tga \
+graphics/femaleSpriteSad.tga \
 graphics/numerals.tga \
+graphics/numerals_ar.tga \
 graphics/chest.tga \
 graphics/chestPrize.tga \
 graphics/chestDust.tga \
 graphics/heart.tga \
 graphics/title.tga \
+graphics/title_ar.tga \
 music/music.tga \
 
 

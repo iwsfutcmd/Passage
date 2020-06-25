@@ -4,7 +4,7 @@ typedef uint32_t Uint32;
 
 // these can be called once at beginning and end of app execution
 // since loaded graphics can be reused for multiple games
-void loadWorldGraphics();
+void loadWorldGraphics(char female);
 void destroyWorldGraphics();
     
 

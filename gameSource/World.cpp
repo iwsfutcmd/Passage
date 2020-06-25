@@ -27,7 +27,7 @@ class GraphicContainer {
             mRed =  new double[ imagePixelCount ];
             mGreen =  new double[ imagePixelCount ];
             mBlue =  new double[ imagePixelCount ];
-            
+
             for( int i=0; i<imagePixelCount; i++ ) {
                 mRed[i] = 255 * image->getChannel(0)[ i ];
                 mGreen[i] = 255 * image->getChannel(1)[ i ];
@@ -171,7 +171,16 @@ class Animation {
                 }
             }
         
-        
+        void colorSwap(Color fromColor, Color toColor) {
+            for(int i = 0; i < mGraphics->mW * mGraphics->mH; i++) {
+                if (mGraphics->mRed[i] == fromColor.r && mGraphics->mGreen[i] == fromColor.g && mGraphics->mBlue[i] == fromColor.b) {
+                    mGraphics->mRed[i] = toColor.r;
+                    mGraphics->mGreen[i] = toColor.g;
+                    mGraphics->mBlue[i] = toColor.b;
+                }
+            }
+        }
+
 
         int mX, mY;
         
@@ -238,7 +247,7 @@ void initWorld() {
     
     Animation character(  0, 0, 8, 8, false, false, spriteContainer );
     
-    
+    // character.colorSwap(Color(255, 255, 0), Color(17, 17, 17));
     animationList.push_back( character );
     
     // unsafe
@@ -246,7 +255,7 @@ void initWorld() {
     //spriteAnimation = animationList.getElement( animationList.size() - 1 );
     spriteAnimationIndex = animationList.size() - 1;
 
-    Animation spouse(  100, 7, 8, 8, false, false, spouseContainer );
+    Animation spouse(  RTL ? RTL_START - 100 : 100, 7, 8, 8, false, false, spouseContainer );
     spouse.mFrameNumber = 7;
     
     
@@ -778,7 +787,7 @@ void setPlayerPosition( int inX, int inY ) {
             animationList.getElement( spouseAnimationIndex );
 
         // spouse stands immediately in front of player
-        int desiredSpouseX = inX + spouseAnimation->mFrameH;
+        int desiredSpouseX = RTL ? (inX - spouseAnimation->mFrameH) : (inX + spouseAnimation->mFrameH);
         int desiredSpouseY = spriteAnimation->mY;
 
         // gravitates there gradually one pixel at a time in each x and y
@@ -933,13 +942,13 @@ char isSpouseDead() {
 
 
 
-void loadWorldGraphics() {
+void loadWorldGraphics(char female) {
     tileContainer = new GraphicContainer( "tileSet.tga" );
     chestContainer = new GraphicContainer( "chest.tga" );
       
-    spriteContainer = new GraphicContainer( "characterSprite.tga" );
-    spriteSadContainer = new GraphicContainer( "characterSpriteSad.tga" );
-    spouseContainer = new GraphicContainer( "spouseSprite.tga" );
+    spriteContainer = new GraphicContainer( female ? "femaleSprite.tga" : "maleSprite.tga" );
+    spriteSadContainer = new GraphicContainer( female ? "femaleSpriteSad.tga" : "maleSpriteSad.tga" );
+    spouseContainer = new GraphicContainer( female ? "maleSprite.tga" : "femaleSprite.tga" );
     
     prizeAnimationContainer = new GraphicContainer( "chestPrize.tga" );
     dustAnimationContainer = new GraphicContainer( "chestDust.tga" );
