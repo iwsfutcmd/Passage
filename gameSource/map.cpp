@@ -17,26 +17,26 @@ extern int tileW;
 
 
 
-char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse );
-char isBlockedGridHash( int inGridX, int inGridY, char inDoNotRecurse );
+char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse, bool rtl );
+char isBlockedGridHash( int inGridX, int inGridY, char inDoNotRecurse, bool rtl );
 
 
 
 
-char allNeighborsBlocked( int inGridX, int inGridY ) {
-    if( ! isBlockedGridHash( inGridX, inGridY - 1, true ) ) {
+char allNeighborsBlocked( int inGridX, int inGridY, bool rtl ) {
+    if( ! isBlockedGridHash( inGridX, inGridY - 1, true, rtl ) ) {
         // top 
         return false;
         }
-    if( ! isBlockedGridHash( inGridX + 1, inGridY, true ) ) {
+    if( ! isBlockedGridHash( inGridX + 1, inGridY, true, rtl ) ) {
         // right
         return false;
         }
-    if( ! isBlockedGridHash( inGridX, inGridY + 1, true ) ) {
+    if( ! isBlockedGridHash( inGridX, inGridY + 1, true, rtl ) ) {
             // bottom
         return false;
         }
-    if( ! isBlockedGridHash( inGridX - 1, inGridY, true ) ) {
+    if( ! isBlockedGridHash( inGridX - 1, inGridY, true, rtl ) ) {
         // left
         return false;
         }
@@ -52,7 +52,7 @@ char allNeighborsBlocked( int inGridX, int inGridY ) {
 HashTable<char> blockedHashTable( 3000 );
 
 
-char isBlockedGridHash( int inGridX, int inGridY, char inDoNotRecurse ) {
+char isBlockedGridHash( int inGridX, int inGridY, char inDoNotRecurse, bool rtl ) {
 
     char found;
     
@@ -65,7 +65,7 @@ char isBlockedGridHash( int inGridX, int inGridY, char inDoNotRecurse ) {
     // else not found
     
     // call real function to get result
-    blocked = isBlockedGrid( inGridX, inGridY, inDoNotRecurse );
+    blocked = isBlockedGrid( inGridX, inGridY, inDoNotRecurse, rtl );
     
     // only insert result if we called the full recursive version of 
     // inBlockGrid.  Otherwise, we aren't getting the real result back
@@ -79,21 +79,21 @@ char isBlockedGridHash( int inGridX, int inGridY, char inDoNotRecurse ) {
 
 
 
-char isBlocked( int inX, int inY ) {
+char isBlocked( int inX, int inY, bool rtl ) {
     // reduce to grid coordinates
     int gridX = inX / tileW;
     int gridY = inY / tileH;
     
     // try hash first
-    return isBlockedGridHash( gridX, gridY, false );
+    return isBlockedGridHash( gridX, gridY, false, rtl );
     }
 
 
 
-char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse ) {
+char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse, bool rtl ) {
     
     // wall along far left and top
-    if( ( RTL ? ( inGridX >= (RTL_START / tileW) ) : ( inGridX <= 0 ) ) || inGridY <= 0 ) {
+    if( ( rtl ? ( inGridX >= (RTL_START / tileW) ) : ( inGridX <= 0 ) ) || inGridY <= 0 ) {
         return true;
         }
 
@@ -110,7 +110,7 @@ char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse ) {
         // however, if all neighbors are blocked, this should
         // be blocked too
         if( !inDoNotRecurse ) {
-            return allNeighborsBlocked( inGridX, inGridY );
+            return allNeighborsBlocked( inGridX, inGridY, rtl );
             }
         else {
             // non-recursive mode
@@ -133,7 +133,7 @@ char isBlockedGrid( int inGridX, int inGridY, char inDoNotRecurse ) {
 
         // should be blocked if all neighbors are blocked
         if( !inDoNotRecurse ) {
-            return allNeighborsBlocked( inGridX, inGridY );
+            return allNeighborsBlocked( inGridX, inGridY, rtl );
             }
         else {
             // non-recursive mode

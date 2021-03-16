@@ -1031,7 +1031,7 @@ void drawIntoScreen( Uint32 *inScreenBuffer, int inWidth, int inHeight ) {
                 }
             }        
         
-        drawScore( gameImage, width, height, score );
+        drawScore( gameImage, width, height, score, rtl );
         
 
         if( isPlayerDead() ) {

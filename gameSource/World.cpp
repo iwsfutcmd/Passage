@@ -229,7 +229,7 @@ void resetSampleHashTable();
 
 
 
-void initWorld() {
+void initWorld(bool rtl) {
     resetMap();
     resetSampleHashTable();
     
@@ -255,7 +255,7 @@ void initWorld() {
     //spriteAnimation = animationList.getElement( animationList.size() - 1 );
     spriteAnimationIndex = animationList.size() - 1;
 
-    Animation spouse(  RTL ? RTL_START - 100 : 100, 7, 8, 8, false, false, spouseContainer );
+    Animation spouse(  rtl ? RTL_START - 100 : 100, 7, 8, 8, false, false, spouseContainer );
     spouse.mFrameNumber = 7;
     
     
@@ -301,15 +301,15 @@ typedef struct rgbColorStruct rgbColor;
  
 // outTransient set to true if sample returned is part of a transient
 // world feature (character sprite, chest, etc.)
-rgbColor sampleFromWorldNoWeight( int inX, int inY, char *outTransient );
+rgbColor sampleFromWorldNoWeight( int inX, int inY, char *outTransient, bool rtl );
 
 // same, but wrapped in a hash table to store non-transient results
-rgbColor sampleFromWorldNoWeightHash( int inX, int inY );
+rgbColor sampleFromWorldNoWeightHash( int inX, int inY, bool rtl );
 
 
 
-Uint32 sampleFromWorld( int inX, int inY, double inWeight ) {
-    rgbColor c = sampleFromWorldNoWeightHash( inX, inY );
+Uint32 sampleFromWorld( int inX, int inY, double inWeight, bool rtl ) {
+    rgbColor c = sampleFromWorldNoWeightHash( inX, inY, rtl );
     
     unsigned char r = (unsigned char)( inWeight * c.r );
     unsigned char g = (unsigned char)( inWeight * c.g );
@@ -360,7 +360,7 @@ void resetSampleHashTable() {
 
 
 
-rgbColor sampleFromWorldNoWeightHash( int inX, int inY ) {
+rgbColor sampleFromWorldNoWeightHash( int inX, int inY, bool rtl ) {
     
     char found;
     
@@ -380,7 +380,7 @@ rgbColor sampleFromWorldNoWeightHash( int inX, int inY ) {
     
     // call real function to get result
     char transient;
-    sample = sampleFromWorldNoWeight( inX, inY, &transient );
+    sample = sampleFromWorldNoWeight( inX, inY, &transient, rtl );
     
     // insert, but only if not transient
     if( !transient ) {
@@ -392,7 +392,7 @@ rgbColor sampleFromWorldNoWeightHash( int inX, int inY ) {
 
 
 
-rgbColor sampleFromWorldNoWeight( int inX, int inY, char *outTransient ) {
+rgbColor sampleFromWorldNoWeight( int inX, int inY, char *outTransient, bool rtl ) {
     *outTransient = false;
 
     rgbColor returnColor;
@@ -484,7 +484,7 @@ rgbColor sampleFromWorldNoWeight( int inX, int inY, char *outTransient ) {
 
     int tileIndex;
     
-    char blocked = isBlocked( inX, inY );
+    char blocked = isBlocked( inX, inY, rtl );
     
     if( !blocked ) {
         // empty tile
@@ -494,19 +494,19 @@ rgbColor sampleFromWorldNoWeight( int inX, int inY, char *outTransient ) {
         
         int neighborsBlockedBinary = 0;
         
-        if( isBlocked( inX, inY - tileH ) ) {
+        if( isBlocked( inX, inY - tileH, rtl ) ) {
             // top
             neighborsBlockedBinary = neighborsBlockedBinary | 1;
             }
-        if( isBlocked( inX + tileW, inY ) ) {
+        if( isBlocked( inX + tileW, inY, rtl ) ) {
             // right
             neighborsBlockedBinary = neighborsBlockedBinary | 1 << 1;
             }
-        if( isBlocked( inX, inY + tileH ) ) {
+        if( isBlocked( inX, inY + tileH, rtl ) ) {
             // bottom
             neighborsBlockedBinary = neighborsBlockedBinary | 1 << 2;
             }
-        if( isBlocked( inX - tileW, inY ) ) {
+        if( isBlocked( inX - tileW, inY, rtl ) ) {
             // left
             neighborsBlockedBinary = neighborsBlockedBinary | 1 << 3;
             }
@@ -759,7 +759,7 @@ void startHeartAnimation( int inX, int inY ) {
 #include <math.h>
 
 
-void setPlayerPosition( int inX, int inY ) {
+void setPlayerPosition( int inX, int inY, bool rtl ) {
 
     Animation *spriteAnimation = 
         animationList.getElement( spriteAnimationIndex );
@@ -787,7 +787,7 @@ void setPlayerPosition( int inX, int inY ) {
             animationList.getElement( spouseAnimationIndex );
 
         // spouse stands immediately in front of player
-        int desiredSpouseX = RTL ? (inX - spouseAnimation->mFrameH) : (inX + spouseAnimation->mFrameH);
+        int desiredSpouseX = rtl ? (inX - spouseAnimation->mFrameH) : (inX + spouseAnimation->mFrameH);
         int desiredSpouseY = spriteAnimation->mY;
 
         // gravitates there gradually one pixel at a time in each x and y
@@ -942,13 +942,13 @@ char isSpouseDead() {
 
 
 
-void loadWorldGraphics(char female) {
+void loadWorldGraphics(char isFemale) {
     tileContainer = new GraphicContainer( "tileSet.tga" );
     chestContainer = new GraphicContainer( "chest.tga" );
       
-    spriteContainer = new GraphicContainer( female ? "femaleSprite.tga" : "maleSprite.tga" );
-    spriteSadContainer = new GraphicContainer( female ? "femaleSpriteSad.tga" : "maleSpriteSad.tga" );
-    spouseContainer = new GraphicContainer( female ? "maleSprite.tga" : "femaleSprite.tga" );
+    spriteContainer = new GraphicContainer( isFemale ? "femaleSprite.tga" : "maleSprite.tga" );
+    spriteSadContainer = new GraphicContainer( isFemale ? "femaleSpriteSad.tga" : "maleSpriteSad.tga" );
+    spouseContainer = new GraphicContainer( isFemale ? "maleSprite.tga" : "femaleSprite.tga" );
     
     prizeAnimationContainer = new GraphicContainer( "chestPrize.tga" );
     dustAnimationContainer = new GraphicContainer( "chestDust.tga" );

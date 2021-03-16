@@ -21,8 +21,8 @@ Uint32 *numeralARGB;
 
 
 
-void initScore() {
-    numeralImage =  readTGA( RTL ? "numerals_ar.tga" : "numerals.tga" );
+void initScore(bool rtl) {
+    numeralImage =  readTGA( rtl ? "numerals_ar.tga" : "numerals.tga" );
     imagePixelCount = numeralImage->getWidth() * numeralImage->getHeight();
     
     numeralRed =  new double[ imagePixelCount ];
@@ -60,13 +60,13 @@ int getScoreHeight() {
 
 
 
-void drawScore( Uint32 *inImage, int inWidth, int inHeight, int inScore ) {
+void drawScore( Uint32 *inImage, int inWidth, int inHeight, int inScore, bool rtl ) {
     
     char *scoreString = autoSprintf( "%d", inScore );
     
     int numDigits = strlen( scoreString );
     
-    int xPosition = RTL ? 0 : inWidth - numDigits * ( numeralW + 1 );
+    int xPosition = rtl ? 0 : inWidth - numDigits * ( numeralW + 1 );
     
     for( int i=0; i<numDigits; i++ ) {
         char digit = scoreString[i];

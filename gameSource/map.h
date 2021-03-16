@@ -1,5 +1,5 @@
 // checks if position is blocked by wall
-char isBlocked( int inX, int inY );
+char isBlocked( int inX, int inY, bool rtl );
 
 
 // checks if chest is present

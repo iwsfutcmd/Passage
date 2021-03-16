@@ -80,7 +80,7 @@ int blowUpChanged = true;
 
 
 char fullScreen = true;
-char female = false;
+bool isFemale = false;
 
 // lock down to 15 fps
 int lockedFrameRate = 15;
@@ -298,7 +298,7 @@ SDL_Surface *screen = NULL;
 
 // play a complete game, from title screen to end, on screen
 // returns false if player quits
-char playGame();
+char playGame(bool rtl);
 
 
 
@@ -394,12 +394,20 @@ int mainFunction( int inArgCount, char **inArgs ) {
         }
     
     char femaleFound = false;
-    int readFemale = SettingsManager::getIntSetting( "female",
-                                                         &femaleFound );
+    int readFemale = SettingsManager::getIntSetting( "isFemale",
+                                                     &femaleFound );
     if( femaleFound ) {
-        female = readFemale;
+        isFemale = readFemale;
         }
 
+    char* lang = SettingsManager::getStringSetting( "lang", "en" );
+    printf( "Language: %s\n", lang );
+    bool rtl;
+    if (strcmp(lang, "ar") == 0) {
+        rtl = true;
+    } else {
+        rtl = false;
+    }
     printf( "Starting game in " );
     if( fullScreen ) {
         printf( "fullscreen" );
@@ -469,14 +477,14 @@ int mainFunction( int inArgCount, char **inArgs ) {
 
 
     // load graphics only once
-    loadWorldGraphics(female);
+    loadWorldGraphics(isFemale);
     
 
     setMusicLoudness( 0 );
     startMusic( "music.tga" );
     
     // keep playing until player quits
-    while( playGame() ) {
+    while( playGame(rtl) ) {
         }
     
     stopMusic();
@@ -506,7 +514,7 @@ int mainFunction( int inArgCount, char **inArgs ) {
 */
 
 
-char playGame() {
+char playGame(bool rtl) {
         
 
     int currentSpriteIndex = 2;
@@ -534,8 +542,8 @@ char playGame() {
 
 
     
-    initWorld();
-    initScore();
+    initWorld(rtl);
+    initScore(rtl);
     
         
     
@@ -570,14 +578,14 @@ char playGame() {
 
 
     // start player position
-    playerX = RTL ? (RTL_START - getTileWidth()) : getTileWidth();
+    playerX = rtl ? (RTL_START - getTileWidth()) : getTileWidth();
     maxPlayerX = playerX;
     
-    dX = RTL ? playerX - width : playerX;
+    dX = rtl ? playerX - width : playerX;
     playerY = 2 + height/2;
     dY = 0;
     
-    setPlayerPosition( (int)playerX, (int)playerY );
+    setPlayerPosition( (int)playerX, (int)playerY, rtl );
     setPlayerSpriteFrame( currentSpriteIndex );
     
 
@@ -588,7 +596,7 @@ char playGame() {
     
 
     // first, flip title onto screen
-    Image *titleImage = readTGA( RTL ? "title_ar.tga" : "title.tga" );
+    Image *titleImage = readTGA( rtl ? "title_ar.tga" : "title.tga" );
     int numTitlePixels = titleImage->getWidth() * titleImage->getHeight();
     
     double *titleRed = titleImage->getChannel( 0 );
@@ -849,9 +857,9 @@ char playGame() {
                 
                                 
                 Uint32 sampleA = 
-                    sampleFromWorld( intWorldX, worldY, aWeight );
+                    sampleFromWorld( intWorldX, worldY, aWeight, rtl );
                 Uint32 sampleB = 
-                    sampleFromWorld( intWorldX + 1, worldY, bWeight );
+                    sampleFromWorld( intWorldX + 1, worldY, bWeight, rtl );
                 
                 
                 
@@ -863,7 +871,7 @@ char playGame() {
                 }
             }        
         
-        drawScore( gameImage, width, height, score );
+        drawScore( gameImage, width, height, score, rtl );
         
 
         if( isPlayerDead() ) {
@@ -873,7 +881,7 @@ char playGame() {
             double gameWeight = 1 - titleWeight;
             
             // wipe from left to right during fade
-            int wipePosition = (int)( RTL ? (width - (titleWeight * width )) : (titleWeight * width));
+            int wipePosition = (int)( rtl ? (width - (titleWeight * width )) : (titleWeight * width));
             // fade out music while we do it
             setMusicLoudness( 1.0 - titleWeight );
             
@@ -906,7 +914,7 @@ char playGame() {
                 
 
                 int x = i % width;
-                if( RTL ? x >= wipePosition : x <= wipePosition ) {
+                if( rtl ? x >= wipePosition : x <= wipePosition ) {
                     gameImage[i] = red << 16 | green << 8 | blue;
                     }
                 
@@ -1009,11 +1017,11 @@ char playGame() {
 
         if( getKeyDown( SDLK_LEFT ) || getJoyPushed( SDL_HAT_LEFT ) ) {
             char notBlocked = 
-                !isBlocked( (int)( playerX - moveDelta ), (int)playerY );
+                !isBlocked( (int)( playerX - moveDelta ), (int)playerY, rtl );
             
             // spouse and character move, and are blocked, together
             if( haveMetSpouse() &&
-                isBlocked( spouseX - moveDelta, spouseY ) ) {
+                isBlocked( spouseX - moveDelta, spouseY, rtl ) ) {
                 notBlocked = false;
                 }
                     
@@ -1035,11 +1043,11 @@ char playGame() {
             }
         else if( getKeyDown( SDLK_RIGHT ) || getJoyPushed( SDL_HAT_RIGHT )) {
             char notBlocked = 
-                !isBlocked( (int)( playerX + moveDelta ), (int)playerY );
+                !isBlocked( (int)( playerX + moveDelta ), (int)playerY, rtl );
 
             // spouse and character move, and are blocked, together
             if( haveMetSpouse() &&
-                isBlocked( spouseX + moveDelta, spouseY ) ) {
+                isBlocked( spouseX + moveDelta, spouseY, rtl ) ) {
                 notBlocked = false;
                 }
 
@@ -1060,11 +1068,11 @@ char playGame() {
             }
         else if( getKeyDown( SDLK_UP ) || getJoyPushed( SDL_HAT_UP ) ) {
             char notBlocked =
-                !isBlocked( (int)playerX, (int)( playerY - moveDelta ) );
+                !isBlocked( (int)playerX, (int)( playerY - moveDelta ), rtl );
             
             // spouse and character move, and are blocked, together
             if( haveMetSpouse() &&
-                isBlocked( spouseX, spouseY - moveDelta ) ) {
+                isBlocked( spouseX, spouseY - moveDelta, rtl ) ) {
                 notBlocked = false;
                 }            
             
@@ -1092,11 +1100,11 @@ char playGame() {
             }
         else if( getKeyDown( SDLK_DOWN )  || getJoyPushed( SDL_HAT_DOWN )) {
             char notBlocked = 
-                !isBlocked( (int)playerX, (int)( playerY + moveDelta ) );
+                !isBlocked( (int)playerX, (int)( playerY + moveDelta ), rtl );
             
             // spouse and character move, and are blocked, together
             if( haveMetSpouse() &&
-                isBlocked( spouseX, spouseY + moveDelta ) ) {
+                isBlocked( spouseX, spouseY + moveDelta, rtl ) ) {
                 notBlocked = false;
                 }
             
@@ -1116,7 +1124,7 @@ char playGame() {
                 }
             }
 
-        setPlayerPosition( (int)playerX, (int)playerY );
+        setPlayerPosition( (int)playerX, (int)playerY, rtl );
         setPlayerSpriteFrame( currentSpriteIndex );
 
         // may change after we set player position
@@ -1157,10 +1165,10 @@ char playGame() {
                 
         if( ! isPlayerDead() && ! paused ) {
             // player position on screen inches forward
-            RTL ? (dX -= timeDelta) : (dX += timeDelta);
+            rtl ? (dX -= timeDelta) : (dX += timeDelta);
             }
         
-        double age = RTL ? ((width - ( playerX - dX )) / width) : ((playerX - dX) / width);
+        double age = rtl ? ((width - ( playerX - dX )) / width) : ((playerX - dX) / width);
         
         setCharacterAges( age );
         
@@ -1221,7 +1229,7 @@ char playGame() {
          
         int exploreDelta = 0;
         
-        if( RTL ) {
+        if( rtl ) {
             if( playerX < maxPlayerX ) {
                 exploreDelta = (int)( maxPlayerX - playerX );
                 maxPlayerX = playerX;

@@ -4,22 +4,22 @@ typedef uint32_t Uint32;
 
 // these can be called once at beginning and end of app execution
 // since loaded graphics can be reused for multiple games
-void loadWorldGraphics(char female);
+void loadWorldGraphics(char isFemale);
 void destroyWorldGraphics();
     
 
 // these should be called at the beginning and end of each new game
-void initWorld();
+void initWorld(bool rtl);
 void destroyWorld();
         
 
-Uint32 sampleFromWorld( int inX, int inY, double inWeight = 1.0 );
+Uint32 sampleFromWorld( int inX, int inY, double inWeight = 1.0, bool rtl = false );
 
 
 void startPrizeAnimation( int inX, int inY );
 void startDustAnimation( int inX, int inY );
 
-void setPlayerPosition( int inX, int inY );
+void setPlayerPosition( int inX, int inY, bool rtl );
 void setPlayerSpriteFrame( int inFrame );
 
 
