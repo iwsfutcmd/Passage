@@ -298,7 +298,7 @@ SDL_Surface *screen = NULL;
 
 // play a complete game, from title screen to end, on screen
 // returns false if player quits
-char playGame(bool rtl);
+char playGame(char* lang, bool rtl);
 
 
 
@@ -484,7 +484,7 @@ int mainFunction( int inArgCount, char **inArgs ) {
     startMusic( "music.tga" );
     
     // keep playing until player quits
-    while( playGame(rtl) ) {
+    while( playGame(lang, rtl) ) {
         }
     
     stopMusic();
@@ -514,7 +514,7 @@ int mainFunction( int inArgCount, char **inArgs ) {
 */
 
 
-char playGame(bool rtl) {
+char playGame(char* lang, bool rtl) {
         
 
     int currentSpriteIndex = 2;
@@ -596,7 +596,10 @@ char playGame(bool rtl) {
     
 
     // first, flip title onto screen
-    Image *titleImage = readTGA( rtl ? "title_ar.tga" : "title.tga" );
+    // Image *titleImage = readTGA( rtl ? "title_ar.tga" : "title.tga" );
+    char* titleFile;
+    sprintf(titleFile, "title_%s.tga", lang);
+    Image *titleImage = readTGA( titleFile );
     int numTitlePixels = titleImage->getWidth() * titleImage->getHeight();
     
     double *titleRed = titleImage->getChannel( 0 );
